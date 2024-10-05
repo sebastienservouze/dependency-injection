@@ -1,0 +1,19 @@
+{
+  "name": "@nerisma/di",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastienservouze/dependency-injection.git"
+  },
+  "author": "Nerisma",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sebastienservouze/dependency-injection/issues"
+  },
+  "homepage": "https://github.com/sebastienservouze/dependency-injection#readme",
+  "description": ""
+}

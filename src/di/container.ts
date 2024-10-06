@@ -1,5 +1,8 @@
 import 'reflect-metadata';
 import {Type} from "./type";
+import {MetadataKeys} from "./metadata-keys.enum";
+
+const logger = require('pino')();
 
 export class Container {
 
@@ -35,19 +38,17 @@ export class Container {
      */
     private static createInstance<T>(dependency: Type<any>): T {
         // Gather all constructor arguments of the dependency
-        const tokens = Reflect.getMetadata('design:paramtypes', dependency) || [];
+        const constructorArgs = Reflect.getMetadata(MetadataKeys.ConstructorArgs, dependency) || [];
 
         // Resolve all constructor dependencies
-        const constructorArgs = tokens.filter((token: any) => this.isDependency(token))
-                                      .map((token: any) => this.resolve<any>(token));
+        const resolvedConstructorArgs = constructorArgs.filter((token: any) => this.isDependency(token))
+                                                       .map((token: any) => this.resolve<any>(token));
 
         // Create a new instance of the dependency
-        const newInstance = new dependency(...constructorArgs);
+        const newInstance = new dependency(...resolvedConstructorArgs);
 
         // Create a new instance of the dependency
         this.dependencies.set(newInstance.constructor.name, dependency);
-
-        console.log(`[DI] Created new instance of ${newInstance.constructor.name}`);
 
         return newInstance;
     }
@@ -59,7 +60,13 @@ export class Container {
         this.dependencies.clear();
     }
 
-    private static isDependency(token: any): boolean {
-        return Reflect.getMetadata('design:paramtypes', token) !== undefined;
+    /**
+     * Check if a class is a dependency by checking if it has the @Dependency decorator.
+     *
+     * @param dependency
+     * @private
+     */
+    private static isDependency(dependency: any): boolean {
+        return Reflect.getMetadata(MetadataKeys.IsDependency, dependency);
     }
 }

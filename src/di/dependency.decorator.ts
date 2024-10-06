@@ -1,4 +1,5 @@
 import {Type} from "./type";
+import {MetadataKeys} from "./metadata-keys.enum";
 
 /**
  * Decorator to mark a class as a dependency.
@@ -7,5 +8,7 @@ import {Type} from "./type";
  * @constructor
  */
 export const Dependency = (): (target: Type<any>) => void => {
-    return (): void => {};
+    return (target: Type<any>): void => {
+        Reflect.defineMetadata(MetadataKeys.IsDependency, true, target);
+    };
 }

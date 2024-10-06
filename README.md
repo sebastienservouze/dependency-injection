@@ -5,7 +5,7 @@ npm install @nerisma/di
 
 # Usage
 
-## Résoudre une dépendance
+## Resolving a dependency
 
 ```typescript
 import {Container} from '@nerisma/di';
@@ -30,7 +30,7 @@ const a = Container.resolve<A>(A);
 console.log(a.b); // B {}
 ```
 
-## Vider le container
+## Clearing the container
 
 ```typescript
 import {Container} from '@nerisma/di';

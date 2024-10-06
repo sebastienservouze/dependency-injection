@@ -16,7 +16,7 @@ export class Container {
      */
     static resolve<T>(dependency: Type<any>): T {
         // Check if class has @Dependency decorator
-        if (!Reflect.getMetadata('design:paramtypes', dependency)) {
+        if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
             throw new Error(`Class ${dependency.name} is not a dependency`);
         }
 

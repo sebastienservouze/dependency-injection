@@ -1,10 +1,13 @@
 {
     "name": "@nerisma/di",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "src/public-api.ts",
     "scripts": {
-        "test": "jest",
-        "build": "npx tsc"
+        "test": "jest --silent",
+        "build": "npx tsc",
+        "check-exports": "attw --pack .",
+        "ci": "npm run build && npm run check-exports && npm run test",
+        "prepublishOnly": "npm run ci"
     },
     "repository": {
         "type": "git",
@@ -18,7 +21,9 @@
     "homepage": "https://github.com/sebastienservouze/dependency-injection#readme",
     "description": "",
     "devDependencies": {
+        "@arethetypeswrong/cli": "^0.16.4",
         "@babel/preset-typescript": "^7.25.7",
+        "@changesets/cli": "^2.27.9",
         "@types/jest": "^29.5.13",
         "@types/node": "^22.7.4",
         "@types/pino": "^7.0.5",
@@ -27,8 +32,5 @@
     },
     "peerDependencies": {
         "reflect-metadata": "^0.2.2"
-    },
-    "dependencies": {
-        "pino": "^9.4.0"
     }
 }

@@ -1,13 +1,14 @@
 {
     "name": "@nerisma/di",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "src/public-api.ts",
     "scripts": {
         "test": "jest --silent",
         "build": "npx tsc",
         "check-exports": "attw --pack .",
         "ci": "npm run build && npm run check-exports && npm run test",
-        "prepublishOnly": "npm run ci"
+        "prepublishOnly": "npm run ci",
+        "local-release": "changeset version && changeset publish"
     },
     "repository": {
         "type": "git",

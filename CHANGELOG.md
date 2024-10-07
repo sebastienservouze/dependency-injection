@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.6
+
+### Patch Changes
+
+- 57e2cca: Correction d'un bug qui empêchait de résoudre certaines dépendances
+
 ## 1.0.5
 
 ### Patch Changes

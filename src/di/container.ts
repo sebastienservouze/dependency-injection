@@ -2,8 +2,6 @@ import 'reflect-metadata';
 import {Type} from "./type";
 import {MetadataKeys} from "./metadata-keys.enum";
 
-const logger = require('pino')();
-
 export class Container {
 
     private static readonly dependencies: Map<string, Object> = new Map();
@@ -14,15 +12,15 @@ export class Container {
      *
      * @param dependency
      */
-    static resolve<T>(dependency: Type<any>): T {
-        // Check if class has @Dependency decorator
+    public static resolve<T>(dependency: Type<any>): T {
+        // Check if class has dependency metadata
         if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
             throw new Error(`Class ${dependency.name} is not a dependency`);
         }
 
         // Get the dependency instance from the container
-        if (this.dependencies.has(dependency.constructor.name)) {
-            return this.dependencies.get(dependency.constructor.name) as T;
+        if (this.dependencies.has(dependency.name)) {
+            return this.dependencies.get(dependency.name) as T;
         }
 
         // Dependency not found in container, create a new instance
@@ -36,7 +34,7 @@ export class Container {
      * @param dependency
      * @private
      */
-    public static createInstance<T>(dependency: Type<any>): T {
+    private static createInstance<T>(dependency: Type<any>): T {
         // Gather all constructor arguments of the dependency
         const constructorArgs = Reflect.getMetadata(MetadataKeys.ConstructorArgs, dependency) || [];
 
@@ -54,14 +52,28 @@ export class Container {
     }
 
     /**
+     * Register an instance of a dependency in the container.
+     *
+     * @param instance
+     */
+    public static register(instance: Object): void {
+        const prototype = Object.getPrototypeOf(instance);
+        if (!Reflect.getMetadata(MetadataKeys.IsDependency, prototype.constructor)) {
+            throw new Error(`Class ${prototype.constructor.name} is not a dependency`);
+        }
+
+        this.dependencies.set(prototype.constructor.name, instance);
+    }
+
+    /**
      * Clear the container.
      */
-    static clear(): void {
+    public static clear(): void {
         this.dependencies.clear();
     }
 
     /**
-     * Check if a class is a dependency by checking if it has the @Dependency decorator.
+     * Check if a class is a dependency by checking if it has the dependency metadata.
      *
      * @param dependency
      * @private

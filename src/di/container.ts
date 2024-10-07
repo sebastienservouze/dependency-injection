@@ -36,7 +36,7 @@ export class Container {
      * @param dependency
      * @private
      */
-    private static createInstance<T>(dependency: Type<any>): T {
+    public static createInstance<T>(dependency: Type<any>): T {
         // Gather all constructor arguments of the dependency
         const constructorArgs = Reflect.getMetadata(MetadataKeys.ConstructorArgs, dependency) || [];
 

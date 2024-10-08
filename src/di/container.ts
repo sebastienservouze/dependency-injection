@@ -46,7 +46,7 @@ export class Container {
         const newInstance = new dependency(...resolvedConstructorArgs);
 
         // Create a new instance of the dependency
-        this.dependencies.set(newInstance.constructor.name, dependency);
+        this.dependencies.set(newInstance.constructor.name, newInstance);
 
         return newInstance;
     }

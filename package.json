@@ -1,8 +1,8 @@
 {
     "name": "@nerisma/di",
     "version": "1.0.7",
-    "main": "src/public-api.ts",
-    "types": "src/public-api.d.ts",
+    "main": "dist/public-api.ts",
+    "types": "dist/public-api.d.ts",
     "scripts": {
         "test": "jest --silent",
         "build": "npx tsc",

@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.9
+
+### Patch Changes
+
+- 5f39961: Correction de la configuration
+
 ## 1.0.8
 
 ### Patch Changes

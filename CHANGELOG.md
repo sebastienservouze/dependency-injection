@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.8
+
+### Patch Changes
+
+- 5f40764: Correction des fichiers de configuration
+
 ## 1.0.7
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.7
+
+### Patch Changes
+
+- 3c2ab93: Meilleure gestion des dépendances
+
 ## 1.0.6
 
 ### Patch Changes

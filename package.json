@@ -1,6 +1,6 @@
 {
     "name": "@nerisma/di",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "main": "src/public-api.ts",
     "types": "src/public-api.d.ts",
     "scripts": {

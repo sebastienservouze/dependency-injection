@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.11
+
+### Patch Changes
+
+- 42259d9: Meilleur code
+
 ## 1.0.10
 
 ### Patch Changes

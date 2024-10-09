@@ -2,17 +2,18 @@ import 'reflect-metadata';
 import {Type} from "./type";
 import {MetadataKeys} from "./metadata-keys.enum";
 
-export class Container extends Map<string, Object> {
+export class Container {
 
     private static readonly dependencies: Map<string, Object> = new Map();
 
     /**
      * Get a dependency from the container.
      * Creates a new instance of the dependency if it is not already in the container.
+     * If it has dependencies, it will resolve them as well.
      *
      * @param dependency
      */
-    public static get<T>(dependency: Type<any>): T {
+    public static resolve<T>(dependency: Type<any>): T {
         // Check if class has dependency metadata
         if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
             throw new Error(`Can't get type ${dependency.name} as a dependency. ${dependency.name} is missing the @Dependency decorator`);
@@ -24,7 +25,7 @@ export class Container extends Map<string, Object> {
         }
 
         // Dependency not found in container, create a new instance of it
-        return this.createAndStoreInstanceOf(dependency);
+        return this.instantiateAndResolve(dependency);
     }
 
     /**
@@ -35,7 +36,7 @@ export class Container extends Map<string, Object> {
      * @param dependency
      * @private
      */
-    private static createAndStoreInstanceOf<T>(dependency: Type<any>): T {
+    private static instantiateAndResolve<T>(dependency: Type<any>): T {
         if (typeof dependency !== 'function') {
             throw new Error(`Can't create instance of ${dependency}. ${dependency} is not a class`);
         }
@@ -45,7 +46,7 @@ export class Container extends Map<string, Object> {
 
         // Resolve all constructor dependencies
         const resolvedConstructorArgs = constructorArgs.filter((token: any) => this.isDependency(token))
-            .map((token: any) => this.get<any>(token));
+            .map((token: any) => this.resolve<any>(token));
 
         // Create a new instance of the dependency
         const newInstance = new dependency(...resolvedConstructorArgs);
@@ -57,16 +58,24 @@ export class Container extends Map<string, Object> {
     }
 
     /**
-     * Register an instance of a dependency in the container.
+     * Inject an instance of a dependency into the container.
      *
      * @param instance
+     * @param force - Set the instance even if it is not a dependency
      */
-    public static set(instance: Object): void {
+    public static inject(instance: Object, force: boolean = false): void {
         if (typeof instance === 'function') {
             throw new Error(`Can't set type ${instance.name} as a dependency. ${instance.name} is a type`);
         }
 
         const prototype = Object.getPrototypeOf(instance);
+
+        if (force) {
+            Reflect.defineMetadata(MetadataKeys.IsDependency, true, prototype.constructor);
+            this.dependencies.set(prototype.constructor.name, instance);
+            return;
+        }
+
         if (!Reflect.getMetadata(MetadataKeys.IsDependency, prototype.constructor)) {
             throw new Error(`Can't set type ${prototype.constructor.name} as a dependency. ${prototype.constructor.name} is missing the @Dependency decorator`);
         }

@@ -8,7 +8,7 @@ class SimpleDependency {
 
 @Dependency()
 class DependencyWithDependency {
-    constructor(private readonly childDependency: SimpleDependency) {}
+    constructor(public readonly childDependency: SimpleDependency) {}
 }
 
 class NotADependency {
@@ -17,7 +17,7 @@ class NotADependency {
 
 @Dependency()
 class DependencyWithoutDependency {
-    constructor(private readonly notADependency: NotADependency) {}
+    constructor(public readonly notADependency: NotADependency) {}
 }
 
 describe("Container IT", () => {
@@ -27,51 +27,62 @@ describe("Container IT", () => {
     });
 
     it('should get a simple dependency', () => {
-        const result = Container.get<SimpleDependency>(SimpleDependency);
+        const result = Container.resolve<SimpleDependency>(SimpleDependency);
 
         expect(result).toBeInstanceOf(SimpleDependency);
     });
 
     it('should get a dependency and its own dependency tree', () => {
-        const result = Container.get<DependencyWithDependency>(DependencyWithDependency);
+        const result = Container.resolve<DependencyWithDependency>(DependencyWithDependency);
 
         expect(result).toBeInstanceOf(DependencyWithDependency);
-        expect(result['childDependency']).toBeInstanceOf(SimpleDependency);
+        expect(result.childDependency).toBeInstanceOf(SimpleDependency);
     });
 
     it('should not get a dependency with a non-dependency constructor argument', () => {
-        const result = Container.get<DependencyWithoutDependency>(DependencyWithoutDependency);
+        const result = Container.resolve<DependencyWithoutDependency>(DependencyWithoutDependency);
 
         expect(result).toBeInstanceOf(DependencyWithoutDependency);
-        expect(result['notADependency']).toBeUndefined();
+        expect(result.notADependency).toBeUndefined();
     });
 
     it('should throw an error when trying to get a class that is not a dependency', () => {
-        expect(() => Container.get<NotADependency>(NotADependency)).toThrow(`Can't get type NotADependency as a dependency. NotADependency is missing the @Dependency decorator`);
+        expect(() => Container.resolve<NotADependency>(NotADependency)).toThrow(`Can't get type NotADependency as a dependency. NotADependency is missing the @Dependency decorator`);
     });
 
     it('should set an instance of a dependency', () => {
-        const instance = new DependencyWithoutDependency(new NotADependency());
-        Container.set(instance);
+        const instance = new SimpleDependency();
+        Container.inject(instance);
 
-        const result = Container.get<DependencyWithoutDependency>(DependencyWithoutDependency);
+        const result = Container.resolve<SimpleDependency>(SimpleDependency);
 
         expect(result).toBe(instance);
     });
 
+    it('should set an instance of a non dependency if force is true', () => {
+        const instance = new NotADependency();
+        Container.inject(instance, true);
+
+        const result = Container.resolve<DependencyWithoutDependency>(DependencyWithoutDependency);
+
+        expect(result.notADependency).toBe(instance);
+    });
+
     it('should throw an error when trying to set a type instead of a class', () => {
-        expect(() => Container.set(SimpleDependency)).toThrow(`Can't set type SimpleDependency as a dependency. SimpleDependency is a type`);
+        expect(() => Container.inject(SimpleDependency)).toThrow(`Can't set type SimpleDependency as a dependency. SimpleDependency is a type`);
     });
     
     it('should remove all dependencies from the container', () => {
-        Container.get(SimpleDependency);
-        Container.get(DependencyWithDependency);
+        Container.resolve(SimpleDependency);
+        Container.resolve(DependencyWithDependency);
+
+        Container.clear()
 
         Container.clear();
     });
     
     it('should remove a dependency from its type', () => {
-        Container.set(new SimpleDependency());
+        Container.inject(new SimpleDependency());
         
         Container.clear(SimpleDependency);
         
@@ -79,7 +90,7 @@ describe("Container IT", () => {
     });
     
     it('should remove all dependencies', () => {
-        Container.get(SimpleDependency);
+        Container.resolve(SimpleDependency);
         
         Container.clear();
         

@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.10
+
+### Patch Changes
+
+- 55bc276: Renommage des méthodes
+
 ## 1.0.9
 
 ### Patch Changes

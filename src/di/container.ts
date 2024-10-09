@@ -2,20 +2,20 @@ import 'reflect-metadata';
 import {Type} from "./type";
 import {MetadataKeys} from "./metadata-keys.enum";
 
-export class Container {
+export class Container extends Map<string, Object> {
 
     private static readonly dependencies: Map<string, Object> = new Map();
 
     /**
-     * Resolve a dependency from the container.
-     * Will automatically resolve all dependencies of the requested dependency.
+     * Get a dependency from the container.
+     * Creates a new instance of the dependency if it is not already in the container.
      *
      * @param dependency
      */
-    public static resolve<T>(dependency: Type<any>): T {
+    public static get<T>(dependency: Type<any>): T {
         // Check if class has dependency metadata
         if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
-            throw new Error(`Class ${dependency.name} is not a dependency`);
+            throw new Error(`Can't get type ${dependency.name} as a dependency. ${dependency.name} is missing the @Dependency decorator`);
         }
 
         // Get the dependency instance from the container
@@ -23,24 +23,29 @@ export class Container {
             return this.dependencies.get(dependency.name) as T;
         }
 
-        // Dependency not found in container, create a new instance
-        return this.createInstance(dependency);
+        // Dependency not found in container, create a new instance of it
+        return this.createAndStoreInstanceOf(dependency);
     }
 
     /**
      * Create a new instance of a dependency.
-     * Will automatically resolve all dependencies of the requested dependency.
+     * Will automatically get (or create) all dependencies of
+     * the requested dependency and store them in container.
      *
      * @param dependency
      * @private
      */
-    private static createInstance<T>(dependency: Type<any>): T {
+    private static createAndStoreInstanceOf<T>(dependency: Type<any>): T {
+        if (typeof dependency !== 'function') {
+            throw new Error(`Can't create instance of ${dependency}. ${dependency} is not a class`);
+        }
+
         // Gather all constructor arguments of the dependency
         const constructorArgs = Reflect.getMetadata(MetadataKeys.ConstructorArgs, dependency) || [];
 
         // Resolve all constructor dependencies
         const resolvedConstructorArgs = constructorArgs.filter((token: any) => this.isDependency(token))
-                                                       .map((token: any) => this.resolve<any>(token));
+            .map((token: any) => this.get<any>(token));
 
         // Create a new instance of the dependency
         const newInstance = new dependency(...resolvedConstructorArgs);
@@ -56,20 +61,37 @@ export class Container {
      *
      * @param instance
      */
-    public static register(instance: Object): void {
+    public static set(instance: Object): void {
+        if (typeof instance === 'function') {
+            throw new Error(`Can't set type ${instance.name} as a dependency. ${instance.name} is a type`);
+        }
+
         const prototype = Object.getPrototypeOf(instance);
         if (!Reflect.getMetadata(MetadataKeys.IsDependency, prototype.constructor)) {
-            throw new Error(`Class ${prototype.constructor.name} is not a dependency`);
+            throw new Error(`Can't set type ${prototype.constructor.name} as a dependency. ${prototype.constructor.name} is missing the @Dependency decorator`);
         }
 
         this.dependencies.set(prototype.constructor.name, instance);
     }
 
     /**
-     * Clear the container.
+     * Clear all dependencies from the container.
+     * 
+     * @param instanceOrType
      */
-    public static clear(): void {
-        this.dependencies.clear();
+    public static clear(...instanceOrType: Type<any>[]): void {
+        if (!instanceOrType.length) {
+            this.dependencies.clear();
+            return;
+        }
+        
+        instanceOrType.forEach((instanceOrType) => {
+            if (typeof instanceOrType !== 'function') {
+                throw new Error(`Can't remove type ${instanceOrType}. ${instanceOrType} is not a class`);
+            }
+            
+            this.dependencies.delete(instanceOrType.name);
+        });
     }
 
     /**

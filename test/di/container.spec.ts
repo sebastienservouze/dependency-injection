@@ -8,7 +8,7 @@ class SimpleDependency {
 
 @Dependency()
 class DependencyWithDependency {
-    constructor(private readonly dependencyA: SimpleDependency) {}
+    constructor(private readonly childDependency: SimpleDependency) {}
 }
 
 class NotADependency {
@@ -26,36 +26,64 @@ describe("Container IT", () => {
         Container.clear();
     });
 
-    it('should resolve a simple dependency', () => {
-        const result = Container.resolve<SimpleDependency>(SimpleDependency);
+    it('should get a simple dependency', () => {
+        const result = Container.get<SimpleDependency>(SimpleDependency);
 
         expect(result).toBeInstanceOf(SimpleDependency);
     });
 
-    it('should resolve a dependency and its own dependency tree', () => {
-        const result = Container.resolve<DependencyWithDependency>(DependencyWithDependency);
+    it('should get a dependency and its own dependency tree', () => {
+        const result = Container.get<DependencyWithDependency>(DependencyWithDependency);
 
         expect(result).toBeInstanceOf(DependencyWithDependency);
-        expect(result['dependencyA']).toBeInstanceOf(SimpleDependency);
+        expect(result['childDependency']).toBeInstanceOf(SimpleDependency);
     });
 
-    it('should not resolve a dependency with a non-dependency constructor argument', () => {
-        const result = Container.resolve<DependencyWithoutDependency>(DependencyWithoutDependency);
+    it('should not get a dependency with a non-dependency constructor argument', () => {
+        const result = Container.get<DependencyWithoutDependency>(DependencyWithoutDependency);
 
         expect(result).toBeInstanceOf(DependencyWithoutDependency);
         expect(result['notADependency']).toBeUndefined();
     });
 
-    it('should register an instance of a dependency', () => {
-        const instance = new DependencyWithoutDependency(new NotADependency());
-        Container.register(instance);
+    it('should throw an error when trying to get a class that is not a dependency', () => {
+        expect(() => Container.get<NotADependency>(NotADependency)).toThrow(`Can't get type NotADependency as a dependency. NotADependency is missing the @Dependency decorator`);
+    });
 
-        const result = Container.resolve<DependencyWithoutDependency>(DependencyWithoutDependency);
+    it('should set an instance of a dependency', () => {
+        const instance = new DependencyWithoutDependency(new NotADependency());
+        Container.set(instance);
+
+        const result = Container.get<DependencyWithoutDependency>(DependencyWithoutDependency);
 
         expect(result).toBe(instance);
     });
 
-    it('should throw an error when trying to resolve a class that is not a dependency', () => {
-        expect(() => Container.resolve<NotADependency>(NotADependency)).toThrow('Class NotADependency is not a dependency');
+    it('should throw an error when trying to set a type instead of a class', () => {
+        expect(() => Container.set(SimpleDependency)).toThrow(`Can't set type SimpleDependency as a dependency. SimpleDependency is a type`);
     });
+    
+    it('should remove all dependencies from the container', () => {
+        Container.get(SimpleDependency);
+        Container.get(DependencyWithDependency);
+
+        Container.clear();
+    });
+    
+    it('should remove a dependency from its type', () => {
+        Container.set(new SimpleDependency());
+        
+        Container.clear(SimpleDependency);
+        
+        expect(Container['dependencies'].size).toBe(0);
+    });
+    
+    it('should remove all dependencies', () => {
+        Container.get(SimpleDependency);
+        
+        Container.clear();
+        
+        expect(Container['dependencies'].size).toBe(0);
+    });
+    
 });

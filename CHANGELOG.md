@@ -1,5 +1,11 @@
 # @nerisma/di
 
+## 1.0.12
+
+### Patch Changes
+
+- db5a7e4: README.md
+
 ## 1.0.11
 
 ### Patch Changes

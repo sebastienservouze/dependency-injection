@@ -74,6 +74,7 @@ export class Container {
         if (force) {
             Reflect.defineMetadata(MetadataKeys.IsDependency, true, prototype.constructor);
             this.dependencies.set(prototype.constructor.name, instance);
+            console.log('Injected', prototype.constructor.name);
             return;
         }
 

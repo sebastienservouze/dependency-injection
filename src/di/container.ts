@@ -53,6 +53,7 @@ export class Container {
 
         // Create a new instance of the dependency
         this.dependencies.set(newInstance.constructor.name, newInstance);
+        console.log('Resolved', newInstance.constructor.name);
 
         return newInstance;
     }
@@ -81,6 +82,7 @@ export class Container {
         }
 
         this.dependencies.set(prototype.constructor.name, instance);
+        console.log('Injected', prototype.constructor.name);
     }
 
     /**

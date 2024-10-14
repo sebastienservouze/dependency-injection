@@ -1,4 +1,4 @@
-export { Container } from './di/container';
-export { Dependency } from './di/dependency.decorator';
-export { Type } from './di/type';
-export { MetadataKeys } from './di/metadata-keys.enum';
+export { Container } from './di/Container';
+export { Dependency } from './di/Dependency.decorator';
+export { Type } from './di/Type';
+export { MetadataKeys } from './di/DIMetadataKeys.enum';

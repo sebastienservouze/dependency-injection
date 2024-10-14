@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import {Type} from "./type";
-import {MetadataKeys} from "./metadata-keys.enum";
-import {ILogger} from "../logger";
+import {Type} from "./Type";
+import {MetadataKeys} from "./DIMetadataKeys.enum";
+import {ILogger} from "../Logger";
 
 export class Container {
 

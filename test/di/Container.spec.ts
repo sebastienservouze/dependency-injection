@@ -1,5 +1,5 @@
-import {Container} from "../../src/di/container";
-import {Dependency} from "../../src/di/dependency.decorator";
+import {Container} from "../../src/di/Container";
+import {Dependency} from "../../src/di/Dependency.decorator";
 
 @Dependency()
 class SimpleDependency {

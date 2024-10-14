@@ -1,5 +1,5 @@
-import {Type} from "./type";
-import {MetadataKeys} from "./metadata-keys.enum";
+import {Type} from "./Type";
+import {MetadataKeys} from "./DIMetadataKeys.enum";
 
 /**
  * Decorator to mark a class as a dependency.

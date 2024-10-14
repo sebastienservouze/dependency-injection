@@ -1,10 +1,12 @@
 import 'reflect-metadata';
 import {Type} from "./type";
 import {MetadataKeys} from "./metadata-keys.enum";
+import {ILogger} from "../logger";
 
 export class Container {
 
     private static readonly dependencies: Map<string, Object> = new Map();
+    private static logger: ILogger;
 
     /**
      * Get a dependency from the container.
@@ -14,14 +16,17 @@ export class Container {
      * @param dependency
      */
     public static resolve<T>(dependency: Type<any>): T {
-        // Check if class has dependency metadata
-        if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
-            throw new Error(`Can't get type ${dependency.name} as a dependency. ${dependency.name} is missing the @Dependency decorator`);
-        }
-
         // Get the dependency instance from the container
         if (this.dependencies.has(dependency.name)) {
+            if (this.logger) {
+                this.logger.debug(`[DI] - ${dependency.name} resolved`);
+            }
             return this.dependencies.get(dependency.name) as T;
+        }
+
+        // Check if class has dependency metadata, if not we can't resolve it
+        if (!Reflect.getMetadata(MetadataKeys.IsDependency, dependency)) {
+            throw new Error(`Can't get type ${dependency.name} as a dependency. ${dependency.name} is missing the @Dependency decorator`);
         }
 
         // Dependency not found in container, create a new instance of it
@@ -45,15 +50,19 @@ export class Container {
         const constructorArgs = Reflect.getMetadata(MetadataKeys.ConstructorArgs, dependency) || [];
 
         // Resolve all constructor dependencies
-        const resolvedConstructorArgs = constructorArgs.filter((token: any) => this.isDependency(token))
-            .map((token: any) => this.resolve<any>(token));
+        const resolvedConstructorArgs = constructorArgs.map((token: any) => this.resolve<any>(token));
 
         // Create a new instance of the dependency
         const newInstance = new dependency(...resolvedConstructorArgs);
+        if (this.logger) {
+            this.logger.debug(`[DI] - ${dependency.name} instantiated`);
+        }
 
         // Create a new instance of the dependency
         this.dependencies.set(newInstance.constructor.name, newInstance);
-        console.log('Resolved', newInstance.constructor.name);
+        if (this.logger) {
+            this.logger.debug(`[DI] - ${dependency.name} injected`);
+        }
 
         return newInstance;
     }
@@ -72,9 +81,10 @@ export class Container {
         const prototype = Object.getPrototypeOf(instance);
 
         if (force) {
-            Reflect.defineMetadata(MetadataKeys.IsDependency, true, prototype.constructor);
             this.dependencies.set(prototype.constructor.name, instance);
-            console.log('Injected', prototype.constructor.name);
+            if (this.logger) {
+                this.logger.debug(`[DI] - ${prototype.constructor.name} injected by force`);
+            }
             return;
         }
 
@@ -83,7 +93,9 @@ export class Container {
         }
 
         this.dependencies.set(prototype.constructor.name, instance);
-        console.log('Injected', prototype.constructor.name);
+        if (this.logger) {
+            this.logger.debug(`[DI] - ${prototype.constructor.name} injected`);
+        }
     }
 
     /**
@@ -94,6 +106,9 @@ export class Container {
     public static clear(...instanceOrType: Type<any>[]): void {
         if (!instanceOrType.length) {
             this.dependencies.clear();
+            if (this.logger) {
+                this.logger.debug(`[DI] - Cleared all dependencies`);
+            }
             return;
         }
         
@@ -103,16 +118,13 @@ export class Container {
             }
             
             this.dependencies.delete(instanceOrType.name);
+            if (this.logger) {
+                this.logger.debug(`[DI] - Cleared ${instanceOrType.name}`);
+            }
         });
     }
 
-    /**
-     * Check if a class is a dependency by checking if it has the dependency metadata.
-     *
-     * @param dependency
-     * @private
-     */
-    private static isDependency(dependency: any): boolean {
-        return Reflect.getMetadata(MetadataKeys.IsDependency, dependency);
+    public static setLogger(logger: ILogger): void {
+        this.logger = logger;
     }
 }

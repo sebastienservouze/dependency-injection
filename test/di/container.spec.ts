@@ -39,11 +39,8 @@ describe("Container IT", () => {
         expect(result.childDependency).toBeInstanceOf(SimpleDependency);
     });
 
-    it('should not get a dependency with a non-dependency constructor argument', () => {
-        const result = Container.resolve<DependencyWithoutDependency>(DependencyWithoutDependency);
-
-        expect(result).toBeInstanceOf(DependencyWithoutDependency);
-        expect(result.notADependency).toBeUndefined();
+    it('should throw an error when failing to resolve any constructor args of the dependency to resolve', () => {
+        expect(() => Container.resolve(DependencyWithoutDependency)).toThrow(`Can't get type NotADependency as a dependency. NotADependency is missing the @Dependency decorator`);
     });
 
     it('should throw an error when trying to get a class that is not a dependency', () => {
